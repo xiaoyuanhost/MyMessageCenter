@@ -12,8 +12,10 @@ TranspondSms Tsms的web端的开源实现，主要定义交互标准和交互接
 >> /user/login  
 >> /user/logout  
 >> /user/info  
+  
 > 配置相关  
 >> 转发规则
 >>> /rule  
+  
 > 设备相关  
 >> /device
