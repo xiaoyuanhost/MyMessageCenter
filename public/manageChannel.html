@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>管理消息通道</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="util.js"></script>
+
+    <script src="auth.js"></script>
+    <script type="text/javascript">
+        window.onload = function() {
+            console.log("get Login status:" + isLogin());
+
+            if (isLogin()) {
+                document.getElementById("loginUser").innerText = getLoginUserName() + " 退出登陆";
+
+                getChannelList(getLoginToken());
+            } else {
+                alert("请先登陆");
+                location = "/loginRegister.html"
+            }
+
+        };
+
+        function getChannelList(token) {
+            var token = getLoginToken();
+
+            if (token != undefined && token != null && token != '') {
+                axios({
+                        method: 'get',
+                        url: '/api/msg/getChannelList',
+                        params: {},
+                        headers: {
+                            'token': token
+                        }
+
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1 && response.data.result != undefined) {
+                            response.data.result.forEach(channelItem => {
+                                drawNewChannel(channelItem.id, channelItem.name, channelItem.token);
+                            });
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            } else {
+                alert("请先填写登陆的手机号或密码");
+            }
+        }
+
+        function drawNewChannel(id, name, token) {
+            var channelListUl = document.getElementById("channelList");
+
+            var channelli = document.createElement("li");
+            channelli.setAttribute("class", "card");
+
+
+            var channelHName = document.createElement("h5");
+            channelHName.innerHTML = name;
+            channelli.appendChild(channelHName);
+            var channelspanToken = document.createElement("span");
+            channelspanToken.innerHTML = token;
+            channelli.appendChild(channelspanToken);
+            var channelHDel = document.createElement("h4");
+            channelHDel.setAttribute("onclick", "delChannel(" + id + ")");
+            channelHDel.innerHTML = "删除";
+            channelli.appendChild(channelHDel);
+
+            channelListUl.appendChild(channelli);
+
+        }
+
+        function delChannel(id) {
+            var token = getLoginToken();
+            if ((token != undefined && token != null && token != '') &&
+                (id != undefined && id != null && id != '')) {
+                axios({
+                        method: 'get',
+                        url: '/api/msg/delChannel',
+                        params: {
+                            id: id
+                        },
+                        headers: {
+                            'token': token
+                        }
+
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1 && response.data.message != undefined) {
+                            alert(response.data.message);
+                            location.reload();
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            }
+        }
+
+        function addChannel() {
+            var token = getLoginToken();
+            var channelName = document.getElementById("channelName").value;
+
+            if ((token != undefined && token != null && token != '') &&
+                (channelName != undefined && channelName != null && channelName != '')) {
+                axios({
+                        method: 'post',
+                        url: '/api/msg/addChannel',
+                        params: {
+                            channelName: channelName
+                        },
+                        headers: {
+                            'token': token
+                        }
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1 && response.data.message != undefined) {
+                            alert(response.data.message);
+                            location.reload();
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            }
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial;
+            padding: 10px;
+            background: #f1f1f1;
+        }
+        /* 头部标题 */
+        
+        .header {
+            padding: 30px;
+            text-align: center;
+            background: white;
+        }
+        
+        .header h1 {
+            font-size: 50px;
+        }
+        /* 导航条 */
+        
+        .topnav {
+            overflow: hidden;
+            background-color: #333;
+        }
+        /* 导航条链接 */
+        
+        .topnav a {
+            float: left;
+            display: block;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        /* 输入 按钮 */
+        
+        input[type=text] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            /* display: inline-block; */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        input[type=button] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        input[type=button]:hover {
+            background-color: #45a049;
+        }
+        /* 消息列表 */
+        
+        ul {
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px;
+        }
+        
+        ul li {
+            background-image: url(sqpurple.gif);
+            background-repeat: no-repeat;
+            background-position: 0px 5px;
+            padding-left: 14px;
+            padding-bottom: 14px;
+        }
+        /* 链接颜色修改 */
+        
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        /* 文章卡片效果 */
+        
+        .card {
+            background-color: white;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        /* 列后面清除浮动 */
+        
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        /* 底部 */
+        
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #ddd;
+            margin-top: 20px;
+        }
+        
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header" hidden>
+        <h1>消息列表</h1>
+        <p>消息列表。</p>
+    </div>
+
+    <div class="topnav">
+        <a href="/">查看消息</a>
+        <a href="/manageChannel.html">管理消息通道</a>
+        <a href="#" onclick="delAccount()" style="float:right">删除账号</a>
+        <a href="#" onclick="logout()" style="float:right" id="loginUser">xxx 退出登陆</a>
+    </div>
+
+    <div class="row">
+        <div id="channelForm" style="background-color: gainsboro;">
+            <form>
+                <label for="channelName">添加通道的名称</label>
+                <input type="text" id="channelName" name="channelName" placeholder="通道名称">
+
+                <input type="button" onclick="addChannel()" value="添加通道">
+            </form>
+        </div>
+        <div id="channelPane">
+            <h2>消息通道列表</h2>
+
+            <ul id="channelList">
+            </ul>
+
+        </div>
+        <p>
+            <h5>使用说明</h5>
+            <ul>
+                <li>
+
+                    <p>
+                        向 https://api.sl.willanddo.com/api/msg/pushMsg?token=p9EM2K4Po01UIJr3sISbRmBFYWCHOGQaqwqk6cgxdsfyevTXtz8hVUlNAunD5i 发送http POST请求
+                    </p>
+                    <p>
+                        上面的p9EM2K4Po01UIJr3sISbRmBFYWCHOGQaqwqk6cgxdsfyevTXtz8hVUlNAunD5i是通道管理列表中的token字段
+                    </p>
+                    <p>
+                        请求参数form
+
+                        <table border="1" cellspacing="0">
+                            <tr>
+                                <th>参数名称</th>
+                                <th>参数类型</th>
+                                <th>是否必需</th>
+                                <th>说明</th>
+                            </tr>
+                            <tr>
+                                <td>from</td>
+                                <td>字符串</td>
+                                <td>必需</td>
+                                <td>消息来自哪里，可填 qq号码、手机号码、邮箱等</td>
+                            </tr>
+                            <tr>
+                                <td>content</td>
+                                <td>字符串</td>
+                                <td>必需</td>
+                                <td>消息内容</td>
+                            </tr>
+                        </table>
+
+                    </p>
+                </li>
+            </ul>
+        </p>
+    </div>
+
+    <div class="footer">
+        <a href="/privacy.html" target="_blank">隐私条款</a>
+    </div>
+
+
+</body>
+
+</html>
+
+</html>

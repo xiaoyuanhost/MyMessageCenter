@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>消息</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="util.js"></script>
+    <script src="auth.js"></script>
+    <script type="text/javascript">
+        var lastMsgId = 0;
+        window.onload = function() {
+            console.log("get Login status:" + isLogin());
+
+            if (isLogin()) {
+                document.getElementById("loginUser").innerText = getLoginUserName() + " 退出登陆";
+
+                getMessage(getLoginToken());
+            } else {
+                alert("请先登陆");
+                location = "/loginRegister.html"
+            }
+
+        };
+
+        function getMessage(token) {
+            if (!"WebSocket" in window) {
+                getMessageByWebSocket(token);
+            } else {
+                getMessageByTimerPull(token);
+            }
+
+        }
+
+        function getHttpMessage() {
+
+            var token = getLoginToken();
+            if (token != undefined && token != null && token != '') {
+                axios({
+                        method: 'get',
+                        url: '/api/msg/getMsgList',
+                        params: {
+                            lastId: lastMsgId
+                        },
+                        headers: {
+                            'token': token
+                        }
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1 && response.data.result != undefined) {
+                            response.data.result.forEach(msgItem => {
+                                if (msgItem.id > lastMsgId) {
+                                    lastMsgId = msgItem.id;
+                                }
+                                drawNewMsg(msgItem.content);
+                            });
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            }
+
+
+
+        }
+
+        function cleanMsg() {
+            if (confirm("确认清空消息吗？确认会立即永久清空消息")) {
+                var token = getLoginToken();
+                if (token != undefined && token != null && token != '') {
+                    axios({
+                            method: 'get',
+                            url: '/api/msg/clearMsg',
+                            params: {},
+                            headers: {
+                                'token': token
+                            }
+                        })
+                        .then(function(response) {
+                            if (response.data.code == 1 && response.data.message != undefined) {
+                                alert(response.data.message);
+                            }
+                        })
+                        .catch(function(error) {
+                            console.log(error);
+                            alert(error);
+                        });
+                }
+            }
+
+        }
+
+        function drawNewMsg(msg) {
+            var msgListUl = document.getElementById("msgList");
+            //获取最后一条消息加在它前面
+            var lastMsg = document.getElementById("lastMsg");
+            lastMsg.removeAttribute("id");
+
+            var msgli = document.createElement("li");
+            msgli.setAttribute("id", "lastMsg");
+            msgli.setAttribute("class", "card");
+            var msgspan = document.createElement("span");
+            msgspan.innerHTML = msg;
+            msgli.appendChild(msgspan);
+            msgListUl.insertBefore(msgli, lastMsg);
+
+        }
+
+        function myStopFunction() {
+            clearInterval(myVar);
+        }
+
+        function getMessageByTimerPull(token) {
+            console.log("getMessage:TimerPull");
+            var myVar = setInterval(function() {
+                getHttpMessage()
+            }, 3000);
+
+        }
+
+        function getMessageByWebSocket(token) {
+            console.log("getMessage:WebSocket");
+
+            // 打开一个 web socket
+            var ws = new WebSocket("ws://localhost:9502/echo");
+
+            ws.onopen = function() {
+                // Web Socket 已连接上，使用 send() 方法发送数据
+                ws.send("发送数据");
+                alert("数据发送中...");
+            };
+
+            ws.onmessage = function(evt) {
+                var received_msg = evt.data;
+                alert("数据已接收..." + received_msg);
+            };
+
+            ws.onclose = function() {
+                // 关闭 websocket
+                alert("连接已关闭...");
+            };
+        };
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial;
+            padding: 10px;
+            background: #f1f1f1;
+        }
+        /* 头部标题 */
+        
+        .header {
+            padding: 30px;
+            text-align: center;
+            background: white;
+        }
+        
+        .header h1 {
+            font-size: 50px;
+        }
+        /* 导航条 */
+        
+        .topnav {
+            overflow: hidden;
+            background-color: #333;
+        }
+        /* 导航条链接 */
+        
+        .topnav a {
+            float: left;
+            display: block;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        /* 按钮 */
+        
+        input[type=button] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        input[type=button]:hover {
+            background-color: #45a049;
+        }
+        /* 消息列表 */
+        
+        ul {
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px;
+        }
+        
+        ul li {
+            background-image: url(sqpurple.gif);
+            background-repeat: no-repeat;
+            background-position: 0px 5px;
+            padding-left: 14px;
+            padding-bottom: 14px;
+        }
+        /* 链接颜色修改 */
+        
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        /* 文章卡片效果 */
+        
+        .card {
+            background-color: white;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        /* 列后面清除浮动 */
+        
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        /* 底部 */
+        
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #ddd;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header" hidden>
+        <h1>消息列表</h1>
+        <p>消息列表。</p>
+    </div>
+
+    <div class="topnav">
+        <a href="/">查看消息</a>
+        <a href="/manageChannel.html">管理消息通道</a>
+        <a href="#" onclick="delAccount()" style="float:right">删除账号</a>
+        <a href="#" onclick="logout()" style="float:right" id="loginUser">xxx 退出登陆</a>
+    </div>
+
+    <div class="row">
+        <div id="msgPane">
+            <form>
+                <input type="button" onclick="cleanMsg()" value="清空">
+            </form>
+            <ul id="msgList">
+                <li id="lastMsg" class="card" hidden></li>
+            </ul>
+
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>

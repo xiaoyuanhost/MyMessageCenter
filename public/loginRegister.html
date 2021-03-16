@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>登陆注册</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="util.js"></script>
+
+    <script src="auth.js"></script>
+
+    <script type="text/javascript">
+        window.onload = function() {
+            console.log("get Login status:" + isLogin());
+
+        };
+
+
+        function loginRegister() {
+            var loginphone = document.getElementById("loginphone").value;
+            var loginemail = document.getElementById("loginemail").value;
+
+            var password = document.getElementById("password").value;
+            if (
+                (
+                    (loginphone != undefined && loginphone != null && loginphone != '') ||
+                    (loginemail != undefined && loginemail != null && loginemail != '')
+                ) &&
+                (password != undefined && password != null && password != '')
+            ) {
+                axios.post('/api/msg/loginRegister', {
+                        loginphone: loginphone,
+                        loginemail: loginemail,
+                        password: password
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1) {
+                            if (response.data.result.userId != undefined &&
+                                response.data.result.token != undefined
+                            ) {
+                                var showName = response.data.result.userId;
+                                if (response.data.result.userName != undefined) {
+                                    showName = response.data.result.userName;
+                                }
+                                sessionStorage.userId = showName;
+                                sessionStorage.token = response.data.result.token;
+                                sessionStorage.userName = response.data.result.userName;
+                                console.log('login success');
+
+                                location = "/";
+                            }
+                        } else {
+                            alert(response.data.message);
+
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            }
+        }
+
+        function getBackPassword() {
+            var loginphone = document.getElementById("loginphone").value;
+            var loginemail = document.getElementById("loginemail").value;
+            if ((loginphone != undefined && loginphone != null && loginphone != '') ||
+                (loginemail != undefined && loginemail != null && loginemail != '')) {
+                axios({
+                        method: 'post',
+                        url: '/api/msg/getBackPassword',
+                        params: {
+                            loginphone: loginphone,
+                            loginemail: loginemail
+                        },
+                        headers: {}
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        console.log(response.data);
+                        console.log(response.data.code);
+                        if (response.data.code == 1 && response.data.message != undefined) {
+                            alert(response.data.message);
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                        alert(error);
+                    });
+            } else {
+                alert("请先填写登陆的手机号或密码");
+            }
+        }
+        // JS函数用于获取url参数:
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+        }
+    </script>
+
+</head>
+<style>
+    input[type=text],
+    input[type=password],
+    select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        /* display: inline-block; */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    
+    input[type=button] {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    input[type=button]:hover {
+        background-color: #45a049;
+    }
+    
+    div {
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 20px;
+    }
+    
+    h2 {
+        text-align: center;
+    }
+    /* 底部 */
+    
+    .footer {
+        padding: 20px;
+        text-align: center;
+        background: #ddd;
+        margin-top: 20px;
+    }
+</style>
+
+<body>
+
+    <div id="loginForm">
+        <h2>请使用邮箱登陆注册</h2>
+        <h2 hidden>请使用手机号或邮箱登陆注册</h2>
+        <form>
+            <label hidden for="loginphone">手机号</label>
+            <input hidden type="text" id="loginphone" name="loginphone" placeholder="手机号">
+            <label for="loginemail">邮箱</label>
+            <input type="text" id="loginemail" name="loginemail" placeholder="邮箱">
+
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" placeholder="密码">
+
+            <input type="button" onclick="loginRegister()" value="登陆注册">
+            <input type="button" onclick="getBackPassword()" value="找回密码">
+        </form>
+        <p>
+            <h5>使用说明</h5>
+            <ul>
+                <li>
+                    使用邮箱注册登陆本系统
+                </li>
+                <li>
+                    可在消息通道管理页面新建管理消息通道，每个消息通道有唯一的token，使用该token可向本系统推送消息
+                </li>
+                <li>
+                    可在消息查看页面查看自动刷新的消息列表，可清空删除消息（立即永久删除）
+                </li>
+                <li>
+                    可删除账户（立即永久删除账号、该账号下的消息通道、该账号下消息）
+                </li>
+            </ul>
+        </p>
+    </div>
+    <div class="footer">
+        使用本系统前请先阅读<a href="/privacy.html" target="_blank">隐私条款</a>，注册登陆使用本系统即视为同意该隐私条款
+    </div>
+
+</body>
+
+</html>
