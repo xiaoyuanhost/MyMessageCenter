@@ -1,22 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Api\Msg;
+namespace Controllers;
 
-use App\MsgChannel;
 use JsonReturn;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Msg\Controller;
 
 class ChannelController extends Controller
 {
     public function addChannel()
     {
-        $channelName= $_GET["channelName"];
-        $token= getallheaders()['token'];
+        $channelName = $_GET["channelName"];
+        $token = getallheaders()['token'];
         if ($token) {
-            if ($user_id=$this->getUserIdByToken($token)) {
+            if ($user_id = $this->getUserIdByToken($token)) {
                 if ($channelName) {
-                    DB()->insert("channels", [
+                    DB()->insert("channel", [
                         "user_id" => $user_id,
                         "name" => $channelName,
                         "token" => $this->getrandstr(200)
@@ -37,11 +34,11 @@ class ChannelController extends Controller
     private function getrandstr($length)
     {
         $str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
-        $lengthStr=str_pad($str, $length, $str);
-        $randStr = str_shuffle($str);//打乱字符串
- 
-        $rands= substr($randStr, 0, $length);//substr(string,start,length);返回字符串的一部分
- 
+        $lengthStr = str_pad($str, $length, $str);
+        $randStr = str_shuffle($str); //打乱字符串
+
+        $rands = substr($randStr, 0, $length); //substr(string,start,length);返回字符串的一部分
+
         return $rands;
     }
 
@@ -50,11 +47,9 @@ class ChannelController extends Controller
         $token = getallheaders()['token'];
 
         if ($token) {
-            if ($user_id=$this->getUserIdByToken($token)) {
-                $channels = DB()->select("channels", ['user_id'], [
+            if ($user_id = $this->getUserIdByToken($token)) {
+                $channels = DB()->select("channel", "*", [
                     "user_id[=]" => $user_id,
-                    "expire_at[>=]" => date('Y-m-d H:i:s'),
-                    "LIMIT" => 1
                 ]);
                 return JsonReturn::success(
                     '成功',
@@ -70,10 +65,10 @@ class ChannelController extends Controller
         $token = getallheaders()['token'];
 
         if ($token) {
-            if ($user_id=$this->getUserIdByToken($token)) {
+            if ($user_id = $this->getUserIdByToken($token)) {
 
-                if ($id= $_GET['id']) {
-                    $channels = DB()->delete("channels", ['user_id'], [
+                if ($id = $_GET['id']) {
+                    $channels = DB()->delete("channel", [
                         "id[=]" => $id,
                         "user_id[=]" => $user_id,
                     ]);

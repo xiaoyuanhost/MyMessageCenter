@@ -1,27 +1,37 @@
 <?php
 
-namespace App\Http\Controllers\Api\Msg;
+namespace Controllers;
 
-use App\Msg;
-use App\MsgChannel;
 use JsonReturn;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Msg\Controller;
 
 class MsgController extends Controller
 {
     public function pushMsg()
     {
-        $token = $_GET["token"];
-        $from = $_GET["from"];
-        $content = $_GET["content"];
+        $json = json_decode(file_get_contents("php://input"), true);
+
+        $token = $json["token"];
+        $from = $json["from"];
+        $content = $json["content"];
+
+        !$token && $token = $_POST["token"];
+        !$from && $from = $_POST["from"];
+        !$content && $content = $_POST["content"];
+
+        
+        !$token && $token = $_GET["token"];
+        !$from && $from = $_GET["from"];
+        !$content && $content = $_GET["content"];
+
         
         if ($token && $from && $content) {
-            $fromChannel = DB()->select("channels", ['user_id'], [
+            $fromChannels = DB()->select("channel", ['user_id'], [
                 "token[=]" => $token,
                 "LIMIT" => 1
             ]);
-            if ($fromChannel) {
+            
+            if ($fromChannels) {
+                $fromChannel= $fromChannels[0];
 
                 DB()->insert("msg", [
                     "user_id" => $fromChannel['user_id'],
@@ -44,16 +54,18 @@ class MsgController extends Controller
 
     public function getMsgList()
     {
-        $lastId= $_GET['lastId'];
+        $lastId= $_GET['lastId']? $_GET['lastId']:0;
+        $limit= $_GET['limit']? $_GET['limit']:20;
         $token = getallheaders()['token'];
 
 
         if ($token) {
             if ($user_id=$this->getUserIdByToken($token)) {
 
-                $msgList = DB()->select("msg", ['*'], [
+                $msgList = DB()->select("msg", '*', [
                     "user_id[=]" => $user_id,
                     "id[>]" => $lastId,
+                    'LIMIT'=> $limit,
                 ]);
                 JsonReturn::success(
                     '成功',
@@ -70,7 +82,7 @@ class MsgController extends Controller
 
         if ($token) {
             if ($user_id=$this->getUserIdByToken($token)) {
-                DB()->delete("msg", ['user_id'], [
+                DB()->delete("msg",[
                     "user_id[=]" => $user_id,
                 ]);
                 JsonReturn::success(

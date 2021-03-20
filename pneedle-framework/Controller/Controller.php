@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Msg;
+namespace Controllers;
 
 use App\MsgToken;
-use Illuminate\Routing\Controller as BaseController;
+use Exception;
 
 class Controller
 {
@@ -15,10 +15,11 @@ class Controller
             "LIMIT" => 1
         ]);
         if($tokens){
-            $tokenM=$$tokens[0];
+            $tokenM=$tokens[0];
             if ($tokenM) {
-                return $tokenM->user_id;
+                return $tokenM['user_id'];
             }
         }
+        throw new Exception("wrong token");
     }
 }

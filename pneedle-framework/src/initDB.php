@@ -12,13 +12,11 @@ function DB(){
         return $database;
     }
 
-    $dbconfig = include_once BASEPATH . '/config/db.php';
-
-    if (array_key_exists($dbconfig['db'], $dbconfig)) {
-        if($dbconfig['db']== 'sqlite3'){
+    if (array_key_exists(CONFIGDB()['db'], CONFIGDB())) {
+        if(CONFIGDB()['db']== 'sqlite3'){
             $database = new Medoo([
                 'database_type' => 'sqlite',
-                'database_file' => $dbconfig['sqlite3']['database_file'],
+                'database_file' => CONFIGDB()['sqlite3']['database_file'],
                 // 'database_file' => 'database_v1.db'
             ]);
             return $database;

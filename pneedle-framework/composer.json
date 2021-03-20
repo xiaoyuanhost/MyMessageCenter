@@ -1,0 +1,25 @@
+{
+    "name": "timcng/simple-php-server",
+    "type": "project",
+    "authors": [
+        {
+            "name": "xiaoyuanhost",
+            "email": "xiaoyuanhost@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "catfan/medoo": "^1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "Controller"
+        },
+         "files": ["config/config.php",
+            "config/configdb.php",
+            "config/routermap.php",
+            "src/function.php",
+            "src/initDB.php"
+        ],
+        "classmap": ["config","src"]
+    }
+}
