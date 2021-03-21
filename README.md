@@ -1,5 +1,5 @@
-# TranspondSmsWeb
-TranspondSms Tsms的web端的开源实现
+# MyMessageCenter
+MyMessageCenter 开源个人消息中心，用于接收管理同步个人的消息
 1. 主要定义功能、交互标准、交互接口
 2. 前后端分离
 3. 提供简单实现用于用户自搭建
